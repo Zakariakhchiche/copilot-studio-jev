@@ -1,0 +1,469 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "TypeSafe",
+    "description": "TypeSafe System One models, such as Jev, return calibrated, structured decisions instead of generated text: the probability that a yes/no question is true, a choice among options you define, or a score on a scale you define. Use it in agents and flows to classify, route, gate and check content.",
+    "version": "1.0",
+    "contact": {
+      "name": "Zakaria Khchiche",
+      "url": "https://zakariakhchiche.github.io/"
+    }
+  },
+  "host": "api.typesafe.ai",
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/systemone/noul": {
+      "post": {
+        "operationId": "AskYesNo",
+        "summary": "Ask a yes/no question",
+        "description": "Evaluates a yes/no question against the content and returns the probability, from 0 to 1, that the answer is yes.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "state",
+                "question"
+              ],
+              "properties": {
+                "state": {
+                  "type": "string",
+                  "title": "Content",
+                  "description": "The text to evaluate, such as a message, a document passage or a JSON record.",
+                  "x-ms-summary": "Content"
+                },
+                "question": {
+                  "type": "string",
+                  "title": "Question",
+                  "description": "The yes/no question, for example: Does this message ask for a refund?",
+                  "x-ms-summary": "Question"
+                },
+                "yes_means": {
+                  "type": "string",
+                  "title": "Yes means",
+                  "description": "Optional: what a yes answer means.",
+                  "x-ms-summary": "Yes means"
+                },
+                "no_means": {
+                  "type": "string",
+                  "title": "No means",
+                  "description": "Optional: what a no answer means.",
+                  "x-ms-summary": "No means"
+                },
+                "model": {
+                  "type": "string",
+                  "title": "Model",
+                  "description": "Model or alias. Pin a version such as jev-1.13.0 if you tune thresholds on its output.",
+                  "default": "jev-latest",
+                  "x-ms-summary": "Model",
+                  "x-ms-visibility": "advanced"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "probability": {
+                  "type": "number",
+                  "format": "double",
+                  "title": "Probability",
+                  "description": "Probability that the answer is yes, from 0 to 1.",
+                  "x-ms-summary": "Probability"
+                },
+                "model": {
+                  "type": "string",
+                  "title": "Model",
+                  "description": "Versioned model that answered.",
+                  "x-ms-summary": "Model"
+                },
+                "input_tokens": {
+                  "type": "integer",
+                  "format": "int32",
+                  "title": "Input tokens",
+                  "x-ms-summary": "Input tokens"
+                }
+              }
+            }
+          }
+        },
+        "x-ms-visibility": "important"
+      }
+    },
+    "/v1/systemone/choice": {
+      "post": {
+        "operationId": "Classify",
+        "summary": "Choose one option",
+        "description": "Picks one option from a list you define and returns the chosen option, its confidence and the probability of every option.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "state",
+                "question",
+                "options"
+              ],
+              "properties": {
+                "state": {
+                  "type": "string",
+                  "title": "Content",
+                  "description": "The text to evaluate.",
+                  "x-ms-summary": "Content"
+                },
+                "question": {
+                  "type": "string",
+                  "title": "Question",
+                  "description": "What to decide, for example: Which team should handle this request?",
+                  "x-ms-summary": "Question"
+                },
+                "options": {
+                  "type": "array",
+                  "title": "Options",
+                  "description": "Between 2 and 255 options.",
+                  "x-ms-summary": "Options",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "name"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "title": "Option",
+                        "x-ms-summary": "Option"
+                      },
+                      "description": {
+                        "type": "string",
+                        "title": "Option description",
+                        "description": "Optional: when this option applies.",
+                        "x-ms-summary": "Option description"
+                      }
+                    }
+                  }
+                },
+                "model": {
+                  "type": "string",
+                  "title": "Model",
+                  "default": "jev-latest",
+                  "x-ms-summary": "Model",
+                  "x-ms-visibility": "advanced"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "choice": {
+                  "type": "string",
+                  "title": "Choice",
+                  "description": "The most likely option.",
+                  "x-ms-summary": "Choice"
+                },
+                "confidence": {
+                  "type": "number",
+                  "format": "double",
+                  "title": "Confidence",
+                  "description": "How certain the model is, from 0 to 1.",
+                  "x-ms-summary": "Confidence"
+                },
+                "probabilities": {
+                  "type": "array",
+                  "title": "Probabilities",
+                  "x-ms-summary": "Probabilities",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "option": {
+                        "type": "string",
+                        "title": "Option",
+                        "x-ms-summary": "Option"
+                      },
+                      "probability": {
+                        "type": "number",
+                        "format": "double",
+                        "title": "Probability",
+                        "x-ms-summary": "Probability"
+                      }
+                    }
+                  }
+                },
+                "model": {
+                  "type": "string",
+                  "title": "Model",
+                  "x-ms-summary": "Model"
+                },
+                "input_tokens": {
+                  "type": "integer",
+                  "format": "int32",
+                  "title": "Input tokens",
+                  "x-ms-summary": "Input tokens"
+                }
+              }
+            }
+          }
+        },
+        "x-ms-visibility": "important"
+      }
+    },
+    "/v1/systemone/score": {
+      "post": {
+        "operationId": "Rate",
+        "summary": "Rate on a scale",
+        "description": "Rates the content on an ordered scale you define (2 to 10 levels) and returns a probability-weighted score and its confidence.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "state",
+                "question",
+                "levels"
+              ],
+              "properties": {
+                "state": {
+                  "type": "string",
+                  "title": "Content",
+                  "description": "The text to evaluate.",
+                  "x-ms-summary": "Content"
+                },
+                "question": {
+                  "type": "string",
+                  "title": "Question",
+                  "description": "What to rate, for example: How frustrated is the customer?",
+                  "x-ms-summary": "Question"
+                },
+                "levels": {
+                  "type": "array",
+                  "title": "Levels",
+                  "description": "Ordered level descriptions, lowest first. Between 2 and 10.",
+                  "x-ms-summary": "Levels",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "model": {
+                  "type": "string",
+                  "title": "Model",
+                  "default": "jev-latest",
+                  "x-ms-summary": "Model",
+                  "x-ms-visibility": "advanced"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "score": {
+                  "type": "number",
+                  "format": "double",
+                  "title": "Score",
+                  "description": "Probability-weighted level index, from 0 (first level) to the number of levels minus 1.",
+                  "x-ms-summary": "Score"
+                },
+                "level": {
+                  "type": "string",
+                  "title": "Most likely level",
+                  "x-ms-summary": "Most likely level"
+                },
+                "confidence": {
+                  "type": "number",
+                  "format": "double",
+                  "title": "Confidence",
+                  "x-ms-summary": "Confidence"
+                },
+                "model": {
+                  "type": "string",
+                  "title": "Model",
+                  "x-ms-summary": "Model"
+                },
+                "input_tokens": {
+                  "type": "integer",
+                  "format": "int32",
+                  "title": "Input tokens",
+                  "x-ms-summary": "Input tokens"
+                }
+              }
+            }
+          }
+        },
+        "x-ms-visibility": "important"
+      }
+    },
+    "/v1/systemone": {
+      "post": {
+        "operationId": "Evaluate",
+        "summary": "Evaluate questions (advanced)",
+        "description": "Sends a full System One request: the content (state) and a map of typed questions (noul, choice, score), and returns one answer per question. See https://docs.typesafe.ai/api.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "state",
+                "model",
+                "questions"
+              ],
+              "properties": {
+                "state": {
+                  "type": "string",
+                  "title": "State",
+                  "description": "The content to evaluate.",
+                  "x-ms-summary": "State"
+                },
+                "model": {
+                  "type": "string",
+                  "title": "Model",
+                  "default": "jev-latest",
+                  "x-ms-summary": "Model"
+                },
+                "questions": {
+                  "type": "object",
+                  "title": "Questions",
+                  "description": "Map of question ids to typed questions, as described in the TypeSafe API reference.",
+                  "x-ms-summary": "Questions"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "model": {
+                  "type": "string",
+                  "title": "Model",
+                  "x-ms-summary": "Model"
+                },
+                "answers": {
+                  "type": "object",
+                  "title": "Answers",
+                  "description": "One answer per question id.",
+                  "x-ms-summary": "Answers"
+                },
+                "usage": {
+                  "type": "object",
+                  "properties": {
+                    "input_tokens": {
+                      "type": "integer",
+                      "format": "int32",
+                      "title": "Input tokens",
+                      "x-ms-summary": "Input tokens"
+                    },
+                    "output_tokens": {
+                      "type": "integer",
+                      "format": "int32",
+                      "title": "Output tokens",
+                      "x-ms-summary": "Output tokens"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-ms-visibility": "advanced"
+      }
+    },
+    "/v1/models": {
+      "get": {
+        "operationId": "ListModels",
+        "summary": "List models",
+        "description": "Lists the model names and aliases your account can use.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "models": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "title": "Name",
+                        "x-ms-summary": "Name"
+                      },
+                      "description": {
+                        "type": "string",
+                        "title": "Description",
+                        "x-ms-summary": "Description"
+                      },
+                      "release_date": {
+                        "type": "string",
+                        "title": "Release date",
+                        "x-ms-summary": "Release date"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-ms-visibility": "advanced"
+      }
+    }
+  },
+  "definitions": {},
+  "parameters": {},
+  "responses": {},
+  "securityDefinitions": {},
+  "security": [],
+  "tags": [],
+  "x-ms-connector-metadata": [
+    {
+      "propertyName": "Website",
+      "propertyValue": "https://typesafe.ai"
+    },
+    {
+      "propertyName": "Privacy policy",
+      "propertyValue": "https://docs.typesafe.ai/legal"
+    },
+    {
+      "propertyName": "Categories",
+      "propertyValue": "AI;Data"
+    }
+  ]
+}
